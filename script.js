@@ -220,7 +220,7 @@ const Play = ({ size = 24, className = "", ...rest }) =>
     React.createElement("polygon", { points: "6 3 20 12 6 21 6 3" })
   );
 
-// ---------- Custom Cursor (Heart) ----------
+// ---------- Custom Cursor (Heart - FIXED) ----------
 function CustomCursor() {
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [trail, setTrail] = useState([]);
@@ -253,14 +253,17 @@ function CustomCursor() {
   return React.createElement(
     "div",
     { className: "pointer-events-none fixed inset-0 z-[9999] overflow-hidden" },
-    // ⬇️ Heart cursor (بيتحرك مع الماوس)
+    // Heart cursor
     React.createElement(
       motion.div,
       {
         className: "absolute left-0 top-0 text-pink-400",
-        style: { filter: "drop-shadow(0 0 10px rgba(236,72,153,0.9))" },
-        animate: { x: pos.x - 12, y: pos.y - 12 },
-        transition: { type: "spring", stiffness: 1200, damping: 50, mass: 0.1 }
+        style: {
+          x: pos.x - 12,
+          y: pos.y - 12,
+          filter: "drop-shadow(0 0 10px rgba(236,72,153,0.9))"
+        },
+        transition: { type: "spring", stiffness: 1500, damping: 60, mass: 0.08 }
       },
       React.createElement(
         "div",
@@ -272,7 +275,7 @@ function CustomCursor() {
         })
       )
     ),
-    // ⬇️ Trail of small hearts
+    // Trail of small hearts
     React.createElement(
       AnimatePresence,
       null,
@@ -281,10 +284,15 @@ function CustomCursor() {
           motion.div,
           {
             key: p.id,
-            initial: { opacity: 0.9, scale: 1 },
-            animate: { opacity: 0, scale: 0, y: p.y + 20, x: p.x },
+            initial: { opacity: 0.9, scale: 1, x: p.x - 7, y: p.y - 7 },
+            animate: {
+              opacity: 0,
+              scale: 0.2,
+              x: p.x - 7,
+              y: p.y - 7 + 25
+            },
             exit: { opacity: 0 },
-            transition: { duration: 0.7 },
+            transition: { duration: 0.8, ease: "easeOut" },
             className: "absolute left-0 top-0 text-pink-300",
             style: { filter: "drop-shadow(0 0 6px rgba(244,114,182,0.8))" }
           },
@@ -294,6 +302,64 @@ function CustomCursor() {
             filled: true
           })
         )
+      )
+    )
+  );
+}
+
+// ---------- Background Hearts (هادية - لون واحد) ----------
+function BackgroundHearts() {
+  const [hearts, setHearts] = useState([]);
+
+  useEffect(() => {
+    const generated = Array.from({ length: 30 }).map((_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      size: Math.random() * 40 + 20,
+      duration: Math.random() * 20 + 20,
+      delay: Math.random() * -30,
+      driftX: Math.random() * 60 - 30,
+      opacity: Math.random() * 0.15 + 0.08
+    }));
+    setHearts(generated);
+  }, []);
+
+  return React.createElement(
+    "div",
+    { className: "absolute inset-0 pointer-events-none overflow-hidden z-0" },
+    hearts.map((h) =>
+      React.createElement(
+        motion.div,
+        {
+          key: h.id,
+          className: "absolute",
+          style: {
+            left: `${h.left}%`,
+            top: `${h.top}%`,
+            color: "#f9a8d4",
+            opacity: h.opacity,
+            filter: "drop-shadow(0 0 20px rgba(249,168,212,0.4))"
+          },
+          animate: {
+            y: [0, -40, 0],
+            x: [0, h.driftX, 0],
+            scale: [1, 1.1, 1],
+            rotate: [0, 10, -10, 0]
+          },
+          transition: {
+            duration: h.duration,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: h.delay
+          }
+        },
+        React.createElement(HeartIcon, {
+          size: h.size,
+          className: "",
+          filled: true,
+          style: { color: "#f9a8d4" }
+        })
       )
     )
   );
@@ -447,7 +513,6 @@ function SecretEntry() {
         transition: { duration: 1.5, ease: "easeInOut" },
         className: "fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
       },
-      // Starfield background
       React.createElement(
         "div",
         { className: "absolute inset-0 overflow-hidden pointer-events-none" },
@@ -466,7 +531,6 @@ function SecretEntry() {
           })
         )
       ),
-      // Nebula glow
       React.createElement("div", {
         className: "absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-[120px] animate-drift",
         style: { background: "radial-gradient(circle, rgba(124,58,237,0.4), transparent 70%)" }
@@ -474,7 +538,7 @@ function SecretEntry() {
       React.createElement("div", {
         className: "absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-[120px] animate-drift",
         style: {
-          background: "radial-gradient(circle, rgba(251,191,36,0.2), transparent 70%)",
+          background: "radial-gradient(circle, rgba(236,72,153,0.2), transparent 70%)",
           animationDelay: "5s"
         }
       }),
@@ -704,7 +768,7 @@ function Intro() {
   );
 }
 
-// ---------- Floating Hearts ----------
+// ---------- Floating Hearts (in Hero) ----------
 function FloatingHearts() {
   return React.createElement(
     "div",
@@ -989,7 +1053,7 @@ function ReasonsSection() {
   );
 }
 
-// ---------- ScratchCard (FIXED - مش هيتقفل تاني) ----------
+// ---------- ScratchCard (FIXED) ----------
 function ScratchCard({ reason, index }) {
   const canvasRef = useRef(null);
   const [revealed, setRevealed] = useState(false);
@@ -1010,7 +1074,6 @@ function ScratchCard({ reason, index }) {
     canvas.style.width = `${rect.width}px`;
     canvas.style.height = `${rect.height}px`;
 
-    // Draw scratch layer: dark with gold speckles
     ctx.fillStyle = "#1a0f3d";
     ctx.fillRect(0, 0, rect.width, rect.height);
     ctx.fillStyle = "#fbbf24";
@@ -1031,7 +1094,6 @@ function ScratchCard({ reason, index }) {
     ctx.fillText("✦ Scratch Here ✦", rect.width / 2, rect.height / 2);
     ctx.globalCompositeOperation = "destination-out";
 
-    // Count cleared pixels
     const totalPixels = rect.width * rect.height;
     let clearedPixels = 0;
     const scratchRadius = 25;
@@ -1047,7 +1109,6 @@ function ScratchCard({ reason, index }) {
     const checkReveal = () => {
       if (revealedRef.current) return;
       clearedPixels += pixelsPerScratch;
-      // 50% threshold = نص الكارت
       if (clearedPixels >= totalPixels * 0.5) {
         revealedRef.current = true;
         setRevealed(true);
@@ -1090,7 +1151,7 @@ function ScratchCard({ reason, index }) {
       canvas.removeEventListener("touchmove", scratch);
       canvas.removeEventListener("touchend", end);
     };
-  }, []); // ⬅️ مرة واحدة بس
+  }, []);
 
   return React.createElement(
     motion.div,
@@ -1605,21 +1666,9 @@ function App() {
             background: "radial-gradient(circle, rgba(167,139,250,0.2), transparent 70%)",
             animationDelay: "4s"
           }
-        }),
-        Array.from({ length: 80 }).map((_, i) =>
-          React.createElement("div", {
-            key: i,
-            className: "absolute rounded-full bg-lavender animate-twinkle",
-            style: {
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              width: `${Math.random() * 2 + 1}px`,
-              height: `${Math.random() * 2 + 1}px`,
-              animationDelay: `${Math.random() * 4}s`
-            }
-          })
-        )
+        })
       ),
+      React.createElement(BackgroundHearts, null),
       React.createElement(Hero, null),
       currentSection !== "entry" &&
         currentSection !== "intro" &&
